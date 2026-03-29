@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0d0f">
+<title>Guitar Practice</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --bg2: #141417;
+    --bg3: #1c1c21;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8e6e0;
+    --muted: #6b6a66;
+    --muted2: #9a9892;
+    --accent: #c8b97a;
+    --green: #5a9e6f;
+    --green-dim: rgba(90,158,111,0.15);
+    --red: #c45c5c;
+    --red-dim: rgba(196,92,92,0.12);
+    --amber: #c8913a;
+    --amber-dim: rgba(200,145,58,0.12);
+    --test: #7a6fc8;
+    --test-dim: rgba(122,111,200,0.15);
+    --radius: 12px;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body.day-mode {
+    --bg: #f5f3ee;
+    --bg2: #eceae4;
+    --bg3: #e2e0d8;
+    --border: rgba(0,0,0,0.07);
+    --border2: rgba(0,0,0,0.13);
+    --text: #1a1a18;
+    --muted: #8a8880;
+    --muted2: #6a6866;
+    --accent: #8a6f2e;
+    --green: #2e7a4a;
+    --green-dim: rgba(46,122,74,0.12);
+    --red: #a03030;
+    --red-dim: rgba(160,48,48,0.10);
+    --amber: #a06820;
+    --amber-dim: rgba(160,104,32,0.12);
+    --test: #5a4fb0;
+    --test-dim: rgba(90,79,176,0.12);
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
+  body { display: flex; flex-direction: column; min-height: 100dvh; }
+
+  /* ── TEST BANNER ── */
+  #test-banner { display: none; background: var(--test-dim); border-bottom: 1px solid rgba(122,111,200,0.4); color: var(--test); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; text-align: center; padding: 5px; order: 0; flex-shrink: 0; }
+  body.test-mode #test-banner { display: block; }
+
+  /* ── NAV ── */
+  nav { display: flex; justify-content: space-around; padding: 12px 0 max(12px, env(safe-area-inset-bottom)); background: var(--bg2); border-top: 1px solid var(--border); order: 2; flex-shrink: 0; }
+  .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--muted); cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; padding: 4px 20px; transition: color 0.2s; text-transform: uppercase; }
+  .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-btn.active { color: var(--accent); }
+
+  /* ── SCREENS ── */
+  main { flex: 1; overflow-y: auto; order: 1; }
+  .screen { display: none; padding: 24px 20px; padding-top: max(20px, env(safe-area-inset-top)); min-height: 100%; }
+  .screen.active { display: block; }
+
+  /* ── SHARED ── */
+  .page-title { font-family: var(--font-display); font-size: 28px; font-weight: 300; font-style: italic; color: var(--text); margin-bottom: 24px; letter-spacing: -0.02em; }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; }
+  .label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .pill { display: inline-block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; border: 1px solid; }
+  .pill.green { color: var(--green); border-color: var(--green); background: var(--green-dim); }
+  .pill.amber { color: var(--amber); border-color: var(--amber); background: var(--amber-dim); }
+  .pill.red   { color: var(--red);   border-color: var(--red);   background: var(--red-dim); }
+  .pill.test  { color: var(--test);  border-color: var(--test);  background: var(--test-dim); }
+
+  /* ── TIMER SCREEN ── */
+  .timer-hero { display: flex; flex-direction: column; align-items: center; padding: 28px 0 24px; }
+  .timer-display { font-family: var(--font-mono); font-size: 72px; font-weight: 300; letter-spacing: -0.04em; color: var(--text); line-height: 1; margin-bottom: 4px; font-variant-numeric: tabular-nums; transition: color 0.3s; }
+  .timer-display.running { color: var(--accent); }
+  body.test-mode .timer-display.running { color: var(--test); }
+  .timer-speed-badge { font-size: 10px; color: var(--test); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; min-height: 14px; }
+  .timer-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 36px; }
+  .timer-btn { width: 80px; height: 80px; border-radius: 50%; border: 1.5px solid var(--border2); background: var(--bg3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; position: relative; }
+  .timer-btn:active { transform: scale(0.94); }
+  .timer-btn.start { border-color: var(--accent); }
+  .timer-btn.stop  { border-color: var(--red); }
+  body.test-mode .timer-btn.start { border-color: var(--test); }
+  .timer-btn svg { width: 28px; height: 28px; }
+  .timer-btn .play-icon { fill: var(--accent); }
+  body.test-mode .timer-btn .play-icon { fill: var(--test); }
+  .timer-btn .stop-icon { fill: var(--red); }
+  @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.4; } 100% { transform: scale(1.5); opacity: 0; } }
+  .timer-btn.running::before { content: ''; position: absolute; inset: -10px; border-radius: 50%; border: 1px solid var(--accent); animation: pulse-ring 1.8s ease-out infinite; }
+  body.test-mode .timer-btn.running::before { border-color: var(--test); }
+
+  /* date navigator — always visible */
+  .date-nav { display: flex; align-items: center; gap: 10px; background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
+  .date-nav label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .date-nav input[type=date] { flex: 1; background: transparent; border: none; color: var(--text); font-family: var(--font-mono); font-size: 13px; outline: none; cursor: pointer; min-width: 0; }
+  .date-nav input[type=date]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.5; }
+  .date-nav-today { background: none; border: 1px solid var(--border2); border-radius: 6px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 5px 10px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+  .date-nav-today:hover { border-color: var(--accent); color: var(--accent); }
+  body.test-mode .date-nav { background: var(--test-dim); border-color: rgba(122,111,200,0.3); }
+  body.test-mode .date-nav label { color: var(--test); }
+  body.test-mode .date-nav input[type=date] { color: var(--test); }
+  body.test-mode .date-nav input[type=date]::-webkit-calendar-picker-indicator { filter: invert(0.5) sepia(1) saturate(3) hue-rotate(220deg); }
+  .inject-btn { display: none; background: var(--test); color: #0d0d0f; border: none; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 12px; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; font-weight: 500; }
+  body.test-mode .inject-btn { display: block; }
+  .inject-btn:active { opacity: 0.8; }
+  /* read-only state: timer locked when viewing a non-today date */
+  .timer-btn.locked { border-color: var(--border2) !important; cursor: not-allowed; opacity: 0.35; }
+  .timer-btn.locked .play-icon { fill: var(--muted) !important; }
+  .timer-btn.locked::before { display: none; }
+  .readonly-badge { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; text-align: center; margin-bottom: 8px; min-height: 14px; }
+
+  /* slots */
+  .slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 4px; }
+  .slot { aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--border2); background: var(--bg3); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; font-size: 10px; color: var(--muted); transition: all 0.3s; }
+  .slot.done    { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+  .slot.partial { border-color: var(--amber); background: var(--amber-dim); color: var(--amber); }
+  .slot .slot-val { font-size: 13px; font-weight: 500; }
+  .slot .slot-lbl { font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .goal-bar-wrap { background: var(--bg3); border-radius: 4px; height: 4px; margin-top: 12px; overflow: hidden; }
+  .goal-bar-fill { height: 100%; border-radius: 4px; background: var(--green); transition: width 0.5s ease; }
+
+  /* ── HISTORY ── */
+  .history-day { margin-bottom: 20px; }
+  .history-day-header { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .history-day-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .session-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
+  .session-time { color: var(--muted2); font-size: 12px; }
+  .session-dur  { font-size: 15px; font-weight: 500; color: var(--text); }
+  .session-del  { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 2px 6px; line-height: 1; transition: color 0.2s; }
+  .session-del:hover { color: var(--red); }
+
+  /* ── ANALYTICS ── */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+  .stat-val { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .stat-unit { font-size: 12px; color: var(--muted); }
+  .calendar-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; margin-top: 8px; }
+  .cal-cell { aspect-ratio: 1; border-radius: 3px; background: var(--bg3); border: 1px solid var(--border); transition: background 0.2s; }
+  .cal-cell.hit     { background: var(--green); border-color: var(--green); }
+  .cal-cell.partial { background: var(--amber-dim); border-color: var(--amber); }
+  .cal-cell.today   { border-color: var(--accent) !important; }
+  .cal-legend { display: flex; gap: 14px; margin-top: 10px; font-size: 10px; color: var(--muted); align-items: center; flex-wrap: wrap; }
+  .cal-legend span { display: flex; align-items: center; gap: 5px; }
+  .cal-swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .window-pills { display: flex; gap: 4px; }
+  .wpill { background: none; border: 1px solid var(--border2); border-radius: 20px; color: var(--muted); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; padding: 3px 10px; cursor: pointer; transition: all 0.2s; }
+  .wpill.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .bar-chart-wrap { position: relative; width: 100%; }
+  .bar-avg-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 10px; color: var(--muted); }
+  .bar-avg-row .avg-line-swatch { width: 18px; height: 2px; background: var(--accent); border-radius: 1px; display: inline-block; }
+
+  /* ── SETTINGS ── */
+  .settings-section { margin-bottom: 28px; }
+  .settings-title { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .input-group { margin-bottom: 12px; }
+  .input-label { font-size: 11px; color: var(--muted2); margin-bottom: 6px; display: block; letter-spacing: 0.05em; }
+  .input-hint  { font-size: 10px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  input[type=text], input[type=number] { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-family: var(--font-mono); font-size: 14px; padding: 11px 14px; outline: none; transition: border-color 0.2s; }
+  input:focus { border-color: var(--accent); }
+  .goal-preview { font-size: 12px; color: var(--muted2); margin-top: 10px; padding: 10px 14px; background: var(--bg3); border-radius: 8px; }
+  .goal-preview strong { color: var(--accent); }
+
+  /* toggle row */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; margin-bottom: 12px; cursor: pointer; }
+  .toggle-info { display: flex; flex-direction: column; gap: 3px; }
+  .toggle-name { font-size: 13px; color: var(--text); }
+  .toggle-desc { font-size: 11px; color: var(--muted); }
+  .sw { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+  .sw input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .sw-track { position: absolute; inset: 0; border-radius: 12px; background: var(--border2); transition: background 0.25s; cursor: pointer; }
+  .sw input:checked + .sw-track { background: var(--test); }
+  .sw-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--muted); transition: transform 0.25s, background 0.25s; pointer-events: none; }
+  .sw input:checked ~ .sw-thumb { transform: translateX(20px); background: #fff; }
+
+  /* test panel */
+  .test-panel { display: none; background: var(--test-dim); border: 1px solid rgba(122,111,200,0.25); border-radius: 8px; padding: 16px; margin-top: 4px; margin-bottom: 12px; }
+  .test-panel.open { display: block; }
+  .test-panel .settings-title { color: var(--test); }
+  .test-panel input:focus { border-color: var(--test); }
+
+  .btn { display: block; width: 100%; padding: 13px; border-radius: 8px; font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; border: none; transition: opacity 0.2s; }
+  .btn:active { opacity: 0.8; }
+  .btn-primary { background: var(--accent); color: #0d0d0f; font-weight: 500; }
+  .btn-danger  { background: var(--red-dim);  color: var(--red);  border: 1px solid var(--red);  margin-top: 8px; }
+  .btn-test    { background: var(--test-dim); color: var(--test); border: 1px solid var(--test); width: 100%; padding: 10px; border-radius: 8px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; margin-top: 8px; display: block; transition: opacity 0.2s; }
+
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--bg3); border: 1px solid var(--border2); color: var(--text); font-family: var(--font-mono); font-size: 12px; padding: 10px 20px; border-radius: 20px; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; z-index: 100; }
+  .toast.show { opacity: 1; }
+  .empty-state { text-align: center; color: var(--muted); padding: 48px 24px; font-size: 13px; line-height: 1.8; }
+  .empty-state .big { font-family: var(--font-display); font-size: 48px; font-style: italic; font-weight: 300; display: block; margin-bottom: 12px; color: var(--border2); }
+  .greeting-sub { font-size: 13px; color: var(--muted); margin-top: -18px; margin-bottom: 20px; letter-spacing: 0.02em; }
+  .export-btn { display: flex; align-items: center; background: none; border: 1px solid var(--border2); border-radius: 20px; color: var(--muted2); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  @media (min-width: 500px) { .screen { max-width: 440px; margin: 0 auto; } }
+</style>
+</head>
+<body>
+
+<div id="test-banner">⚡ test mode — timer runs at <span id="banner-speed">60</span>× speed · sessions not synced</div>
+
+<main>
+
+  <!-- TIMER -->
+  <section class="screen active" id="screen-timer">
+    <p class="page-title" id="greeting-title">Practice</p>
+    <p class="greeting-sub" id="greeting-sub"></p>
+
+    <div class="date-nav">
+      <label>Date</label>
+      <input type="date" id="view-date" onchange="onViewDateChange()">
+      <button class="date-nav-today" onclick="jumpToToday()">Today</button>
+      <button class="inject-btn" onclick="injectTestSession()">+ Full day</button>
+    </div>
+    <div class="readonly-badge" id="readonly-badge"></div>
+
+    <div class="timer-hero">
+      <div class="timer-display" id="timer-display">00:00</div>
+      <div class="timer-speed-badge" id="speed-badge"></div>
+      <div class="timer-sub" id="timer-sub">ready to play</div>
+      <button class="timer-btn start" id="timer-btn" onclick="toggleTimer()">
+        <svg id="timer-icon" viewBox="0 0 24 24">
+          <polygon class="play-icon" points="6,3 20,12 6,21"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="label" id="slots-label">Today's sessions</div>
+      <div class="slots-grid" id="slots-grid"></div>
+      <div class="goal-bar-wrap"><div class="goal-bar-fill" id="goal-bar" style="width:0%"></div></div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="screen" id="screen-history">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px">
+      <p class="page-title" style="margin:0">History</p>
+      <button class="export-btn" onclick="exportCSV()">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:5px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+    </div>
+    <div id="history-list"></div>
+  </section>
+
+  <!-- ANALYTICS -->
+  <section class="screen" id="screen-analytics">
+    <p class="page-title">Analytics</p>
+
+    <!-- Chart first, window pills control everything below -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="label" style="margin:0" id="bar-chart-label">Sessions per day</div>
+        <div class="window-pills">
+          <button class="wpill active" onclick="setChartWindow(7,this)">7d</button>
+          <button class="wpill" onclick="setChartWindow(30,this)">30d</button>
+          <button class="wpill" onclick="setChartWindow(365,this)">1y</button>
+        </div>
+      </div>
+      <div class="bar-chart-wrap">
+        <svg id="bar-chart-svg" width="100%" style="display:block"></svg>
+      </div>
+      <div class="bar-avg-row" id="bar-avg-row"></div>
+    </div>
+
+    <!-- Stats update with window selection -->
+    <div class="stat-grid">
+      <div class="stat-card"><div class="label">Current streak</div><div class="stat-val" id="stat-streak">0</div><div class="stat-unit">days</div></div>
+      <div class="stat-card"><div class="label" id="stat-rate-label">Goal hit rate</div><div class="stat-val" id="stat-rate">0%</div><div class="stat-unit" id="stat-rate-unit">of days</div></div>
+      <div class="stat-card"><div class="label" id="stat-hours-label">Total hours</div><div class="stat-val" id="stat-hours">0</div><div class="stat-unit">hrs practiced</div></div>
+      <div class="stat-card"><div class="label" id="stat-best-label">Best streak</div><div class="stat-val" id="stat-best">0</div><div class="stat-unit">days</div></div>
+    </div>
+
+    <!-- Calendar always shows 91 days -->
+    <div class="card">
+      <div class="label">Past 91 days</div>
+      <div class="calendar-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <span><span class="cal-swatch" style="background:var(--green)"></span>goal met</span>
+        <span><span class="cal-swatch" style="background:var(--amber-dim);border:1px solid var(--amber)"></span>partial</span>
+        <span><span class="cal-swatch" style="background:var(--bg3);border:1px solid var(--border2)"></span>none</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="screen" id="screen-settings">
+    <p class="page-title">Settings</p>
+
+    <div class="settings-section">
+      <div class="settings-title">Profile</div>
+      <div class="input-group">
+        <label class="input-label">Your nickname</label>
+        <input type="text" id="nickname-input" placeholder="e.g. Jimi" maxlength="30" oninput="saveNickname()">
+        <div class="input-hint">Shows on the home screen greeting</div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">Daily goal</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="input-group" style="margin:0">
+          <label class="input-label">Sessions / day</label>
+          <input type="number" id="goal-sessions" min="1" max="20" value="5" oninput="updateGoalPreview()">
+        </div>
+        <div class="input-group" style="margin:0">
+          <label class="input-label">Minutes / session</label>
+          <input type="number" id="goal-minutes" min="0" max="120" value="10" oninput="updateGoalPreview()">
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">+ Extra seconds / session</label>
+        <input type="number" id="goal-seconds" min="0" max="59" value="0" oninput="updateGoalPreview()">
+        <div class="input-hint">Combine with 0 minutes for very short goals (good for testing)</div>
+      </div>
+      <div class="goal-preview" id="goal-preview"></div>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="saveGoals()">Save goal</button>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">GitHub connection</div>
+      <div class="input-group">
+        <label class="input-label">Netlify site URL</label>
+        <input type="text" id="cfg-netlify" placeholder="https://your-site.netlify.app">
+      </div>
+      <div class="input-group">
+        <label class="input-label">GitHub repo (user/repo)</label>
+        <input type="text" id="cfg-repo" placeholder="username/guitar-practice">
+      </div>
+      <button class="btn btn-primary" onclick="saveConfig()">Save config</button>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">Practice reminder</div>
+      <div class="toggle-row" onclick="document.getElementById('reminder-toggle').click()">
+        <div class="toggle-info">
+          <span class="toggle-name">Interval reminder</span>
+          <span class="toggle-desc">Sound + vibration while timer runs</span>
+        </div>
+        <label class="sw" onclick="event.stopPropagation()">
+          <input type="checkbox" id="reminder-toggle" onchange="saveReminder()">
+          <span class="sw-track"></span>
+          <span class="sw-thumb"></span>
+        </label>
+      </div>
+      <div class="input-group" id="reminder-interval-group">
+        <label class="input-label">Reminder every (minutes)</label>
+        <input type="number" id="reminder-interval" min="1" max="60" value="5" oninput="saveReminder()">
+        <div class="input-hint">e.g. 5 = chime every 5 minutes. Works in test mode too (uses virtual time).</div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">Developer</div>
+      <div class="toggle-row" onclick="document.getElementById('test-toggle').click()">
+        <div class="toggle-info">
+          <span class="toggle-name">Test mode</span>
+          <span class="toggle-desc">Fast timer · date injection · no sync</span>
+        </div>
+        <label class="sw" onclick="event.stopPropagation()">
+          <input type="checkbox" id="test-toggle" onchange="toggleTestMode(this.checked)">
+          <span class="sw-track"></span>
+          <span class="sw-thumb"></span>
+        </label>
+      </div>
+      <div class="test-panel" id="test-panel">
+        <div class="settings-title">Test mode config</div>
+        <div class="input-group">
+          <label class="input-label">Timer speed multiplier</label>
+          <input type="number" id="test-speed" min="1" max="3600" value="60" oninput="updateSpeedPreview()">
+          <div class="input-hint" id="speed-preview">1 real second = 1 minute of practice time</div>
+        </div>
+        <button class="btn-test" onclick="clearTestSessions()">Clear all test sessions</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">Data</div>
+      <button class="btn btn-danger" onclick="confirmClear()">Clear all local data</button>
+    </div>
+  </section>
+
+</main>
+
+<nav>
+  <button class="nav-btn active" id="nav-timer" onclick="showScreen('timer')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><polyline points="12,9 12,13 14,15"/><line x1="9.5" y1="2" x2="14.5" y2="2"/></svg>
+    Timer
+  </button>
+  <button class="nav-btn" id="nav-history" onclick="showScreen('history')">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h12M4 18h8"/></svg>
+    Log
+  </button>
+  <button class="nav-btn" id="nav-analytics" onclick="showScreen('analytics')">
+    <svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+    Stats
+  </button>
+  <button class="nav-btn" id="nav-settings" onclick="showScreen('settings')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Settings
+  </button>
+  <button class="nav-btn" id="nav-theme" onclick="toggleTheme()">
+    <svg id="theme-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <span id="theme-label">Day</span>
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let sessions   = [];
+let goals      = { sessions: 5, minutes: 10, seconds: 0 };
+let cfg        = { netlify: '', repo: '' };
+let testMode   = false;
+let testSpeed  = 60; // real-second multiplier
+
+let timerInterval   = null;
+let timerStart      = null;  // Date.now() when started
+let timerRunning    = false;
+let timerVirtualSec = 0;
+
+let reminder = { enabled: false, intervalMin: 5 };
+let lastReminderAt  = 0; // virtual seconds at which last reminder fired
+let nickname = '';
+
+// ── INIT ──
+function toggleTheme() {
+  const isDay = document.body.classList.toggle('day-mode');
+  localStorage.setItem('gp_theme', isDay ? 'day' : 'night');
+  document.querySelector('meta[name=theme-color]').setAttribute('content', isDay ? '#f5f3ee' : '#0d0d0f');
+  updateThemeIcon(isDay);
+  showToast(isDay ? 'Day mode' : 'Night mode');
+}
+
+function updateThemeIcon(isDay) {
+  const icon  = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
+  if (!icon || !label) return;
+  if (isDay) {
+    // show moon icon (switch to night)
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    label.textContent = 'Night';
+  } else {
+    // show sun icon (switch to day)
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+    label.textContent = 'Day';
+  }
+}
+
+function saveNickname() {
+  nickname = document.getElementById('nickname-input').value.trim();
+  localStorage.setItem('gp_nickname', nickname);
+  updateGreeting();
+}
+
+function updateGreeting() {
+  const title = document.getElementById('greeting-title');
+  const sub   = document.getElementById('greeting-sub');
+  if (!title) return;
+  if (nickname) {
+    title.textContent = `Hi ${nickname}`;
+    sub.textContent   = "Let's play some guitar";
+  } else {
+    title.textContent = 'Practice';
+    sub.textContent   = '';
+  }
+}
+
+function exportCSV() {
+  if (!sessions.length) { showToast('No sessions to export'); return; }
+
+  const rows = [
+    ['Date', 'Start time', 'Duration (min)', 'Duration (sec)', 'Goal met', 'Type']
+  ];
+  const threshold = goalThresholdSec();
+
+  // group by date to compute goal-met per day
+  const byDay = {};
+  sessions.forEach(s => { (byDay[s.date] = byDay[s.date] || []).push(s); });
+
+  const sorted = [...sessions].sort((a,b) => a.start.localeCompare(b.start));
+  sorted.forEach(s => {
+    const daySessions = byDay[s.date] || [];
+    const dayMet = goalMet(daySessions) ? 'Yes' : 'No';
+    const mins   = (s.durationSec / 60).toFixed(2);
+    const time   = new Date(s.start).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    rows.push([s.date, time, mins, s.durationSec, dayMet, s.test ? 'test' : 'real']);
+  });
+
+  // Add BOM so Excel opens UTF-8 CSV correctly
+  const bom     = '\uFEFF';
+  const csv     = bom + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const dateTag = new Date().toISOString().slice(0,10);
+  const who     = nickname ? nickname.replace(/[^a-z0-9]/gi,'_') : 'guitar';
+  const blob    = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url     = URL.createObjectURL(blob);
+  const a       = document.createElement('a');
+  a.href        = url;
+  a.download    = `${who}_practice_${dateTag}.csv`;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  // Small delay before cleanup so browser has time to start the download
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+  showToast(`Exported ${sorted.length} sessions`);
+}
+
+async function init() {
+  loadLocal();
+  loadConfig();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  document.getElementById('view-date').value = todayStr();
+  updateGoalPreview();
+  updateSpeedPreview();
+  await fetchSessions();
+  renderAll();
+}
+
+function loadLocal() {
+  try {
+    const g = localStorage.getItem('gp_goals');
+    if (g) goals = Object.assign({ sessions:5, minutes:10, seconds:0 }, JSON.parse(g));
+    document.getElementById('goal-sessions').value = goals.sessions;
+    document.getElementById('goal-minutes').value  = goals.minutes;
+    document.getElementById('goal-seconds').value  = goals.seconds || 0;
+  } catch {}
+  // load nickname
+  try {
+    const n = localStorage.getItem('gp_nickname');
+    if (n) nickname = n;
+    document.getElementById('nickname-input').value = nickname;
+    updateGreeting();
+  } catch {}
+  // load theme
+  try {
+    const th = localStorage.getItem('gp_theme');
+    const dayMode = th === 'day';
+    document.body.classList.toggle('day-mode', dayMode);
+    updateThemeIcon(dayMode);
+    document.querySelector('meta[name=theme-color]').setAttribute('content', dayMode ? '#f5f3ee' : '#0d0d0f');
+  } catch {}
+  // load reminder
+  try {
+    const r = localStorage.getItem('gp_reminder');
+    if (r) reminder = JSON.parse(r);
+    document.getElementById('reminder-toggle').checked   = reminder.enabled;
+    document.getElementById('reminder-interval').value   = reminder.intervalMin;
+  } catch {}
+  try {
+    const t = localStorage.getItem('gp_test');
+    if (t) {
+      const td = JSON.parse(t);
+      testMode  = !!td.enabled;
+      testSpeed = td.speed || 60;
+      document.getElementById('test-toggle').checked = testMode;
+      document.getElementById('test-speed').value    = testSpeed;
+      applyTestMode(testMode);
+    }
+  } catch {}
+}
+
+function loadConfig() {
+  try {
+    const c = localStorage.getItem('gp_cfg');
+    if (c) cfg = JSON.parse(c);
+    document.getElementById('cfg-netlify').value = cfg.netlify || '';
+    document.getElementById('cfg-repo').value    = cfg.repo    || '';
+  } catch {}
+}
+
+async function fetchSessions() {
+  if (!cfg.repo) return;
+  try {
+    const url = `https://raw.githubusercontent.com/${cfg.repo}/main/data/sessions.json?t=${Date.now()}`;
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const data = await res.json();
+    const localTest = sessions.filter(s => s.test);
+    const remote    = data.filter(s => s.id !== '__goals__' && !s.test);
+    sessions = [...remote, ...localTest];
+    const goalsEntry = data.find(s => s.id === '__goals__');
+    if (goalsEntry) {
+      goals = Object.assign({ sessions:5, minutes:10, seconds:0 }, {
+        sessions: goalsEntry.sessions || 5,
+        minutes:  goalsEntry.minutes  || 10,
+        seconds:  goalsEntry.seconds  || 0
+      });
+      localStorage.setItem('gp_goals', JSON.stringify(goals));
+      document.getElementById('goal-sessions').value = goals.sessions;
+      document.getElementById('goal-minutes').value  = goals.minutes;
+      document.getElementById('goal-seconds').value  = goals.seconds || 0;
+      updateGoalPreview();
+    }
+  } catch {}
+}
+
+// ── NAV ──
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('nav-'    + name).classList.add('active');
+  if (name === 'analytics') renderAnalytics();
+  if (name === 'history')   renderHistory();
+  if (name === 'timer')     renderTimerScreen();
+}
+
+// ── TIMER ──
+// ── SOUNDS (Web Audio API — no files needed) ──
+let audioCtx = null;
+
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // Chrome suspends AudioContext when tab loses focus — always resume before use
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playStartSound() {
+  try {
+    const ctx = getAudio();
+    const t   = ctx.currentTime;
+    // Guitar-like pluck: two quick notes rising (E2 → B2)
+    [[82.4, 0, 0.18], [123.5, 0.12, 0.22], [185.0, 0.22, 0.28]].forEach(([freq, when, dur]) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, t + when);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.004, t + when + dur); // subtle detune
+      gain.gain.setValueAtTime(0, t + when);
+      gain.gain.linearRampToValueAtTime(0.22, t + when + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + when + dur + 0.3);
+      osc.start(t + when);
+      osc.stop(t + when + dur + 0.35);
+    });
+  } catch {}
+}
+
+function playStopSound() {
+  try {
+    const ctx = getAudio();
+    const t   = ctx.currentTime;
+    // Warm resolved chord: G major arpeggio descending (G4 → D4 → G3)
+    [[392.0, 0,    0.35],
+     [293.7, 0.08, 0.35],
+     [196.0, 0.18, 0.5 ]].forEach(([freq, when, dur]) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t + when);
+      gain.gain.setValueAtTime(0, t + when);
+      gain.gain.linearRampToValueAtTime(0.18, t + when + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + when + dur + 0.4);
+      osc.start(t + when);
+      osc.stop(t + when + dur + 0.45);
+    });
+  } catch {}
+}
+
+async function playReminderSound() {
+  try {
+    const ctx = getAudio();
+    // Wait for context to actually resume before scheduling — fixes Chrome idle suspension
+    if (ctx.state !== 'running') await ctx.resume();
+    const t   = ctx.currentTime;
+    // Two soft bell tones — a gentle major third (C5 → E5)
+    [[523.25, 0,    0.6],
+     [659.25, 0.18, 0.6]].forEach(([freq, when, dur]) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t + when);
+      gain.gain.setValueAtTime(0, t + when);
+      gain.gain.linearRampToValueAtTime(0.15, t + when + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + when + dur);
+      osc.start(t + when);
+      osc.stop(t + when + dur + 0.05);
+    });
+  } catch(e) { console.warn('Reminder sound failed:', e); }
+}
+
+function vibratePhone() {
+  try {
+    if (navigator.vibrate) {
+      // Two short pulses: buzz 200ms, pause 100ms, buzz 200ms
+      navigator.vibrate([200, 100, 200]);
+    }
+  } catch {}
+}
+
+function saveReminder() {
+  reminder.enabled     = document.getElementById('reminder-toggle').checked;
+  reminder.intervalMin = parseInt(document.getElementById('reminder-interval').value) || 5;
+  localStorage.setItem('gp_reminder', JSON.stringify(reminder));
+}
+
+function toggleTimer() { timerRunning ? stopTimer() : startTimer(); }
+
+function startTimer() {
+  playStartSound();
+  timerRunning    = true;
+  timerStart      = Date.now();
+  timerVirtualSec = 0;
+  lastReminderAt  = 0;
+  timerInterval   = setInterval(tickTimer, 100);
+  document.getElementById('timer-display').classList.add('running');
+  document.getElementById('timer-btn').className  = 'timer-btn stop running';
+  document.getElementById('timer-sub').textContent = testMode ? 'test session running' : 'in session';
+  document.getElementById('timer-icon').innerHTML  = '<rect class="stop-icon" x="5" y="5" width="14" height="14" rx="2"/>';
+}
+
+function tickTimer() {
+  const realElapsed   = (Date.now() - timerStart) / 1000;
+  timerVirtualSec     = testMode ? realElapsed * testSpeed : realElapsed;
+  const vs = Math.floor(timerVirtualSec);
+  document.getElementById('timer-display').textContent =
+    String(Math.floor(vs / 60)).padStart(2,'0') + ':' + String(vs % 60).padStart(2,'0');
+
+  // Interval reminder
+  if (reminder.enabled && reminder.intervalMin > 0) {
+    const intervalSec = reminder.intervalMin * 60;
+    const due = Math.floor(vs / intervalSec); // how many intervals have passed
+    if (due > 0 && due > lastReminderAt / intervalSec) {
+      lastReminderAt = due * intervalSec;
+      // Eagerly kick the context awake in the same tick before the async play
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      playReminderSound();
+      vibratePhone();
+    }
+  }
+}
+
+async function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  const dur     = Math.floor(timerVirtualSec);
+  timerRunning  = false; timerVirtualSec = 0;
+  document.getElementById('timer-display').textContent = '00:00';
+  document.getElementById('timer-display').classList.remove('running');
+  document.getElementById('timer-btn').className  = 'timer-btn start';
+  document.getElementById('timer-sub').textContent = 'ready to play';
+  document.getElementById('timer-icon').innerHTML  = '<polygon class="play-icon" points="6,3 20,12 6,21"/>';
+
+  if (dur < 3) { showToast('Too short — keep going!'); return; }
+  playStopSound();
+
+  // In test mode use the viewed date; in normal mode always use today
+  const sessionDate = testMode ? viewDateStr() : todayStr();
+  const session = {
+    id: crypto.randomUUID(), date: sessionDate,
+    start: new Date(Date.now() - dur * 1000).toISOString(),
+    durationSec: dur,
+    ...(testMode ? { test: true } : {})
+  };
+  sessions.push(session);
+  renderTimerScreen();
+
+  if (testMode) {
+    showToast(`Saved on ${formatDateLabel(sessionDate)} (test, ${testSpeed}× speed)`);
+    return;
+  }
+  const ok = await apiSave('save', { session });
+  showToast(ok ? 'Session saved' : 'Saved locally — sync failed');
+}
+
+// ── TEST MODE ──
+function toggleTestMode(on) {
+  testSpeed = parseInt(document.getElementById('test-speed').value) || 60;
+  testMode  = on;
+  localStorage.setItem('gp_test', JSON.stringify({ enabled: on, speed: testSpeed }));
+  applyTestMode(on);
+  renderTimerScreen();
+  showToast(on ? `Test mode ON — ${testSpeed}× speed, no sync` : 'Test mode OFF');
+}
+
+function applyTestMode(on) {
+  document.body.classList.toggle('test-mode', on);
+  document.getElementById('test-panel').classList.toggle('open', on);
+  document.getElementById('speed-badge').textContent = on ? `${testSpeed}× speed` : '';
+  document.getElementById('banner-speed').textContent = testSpeed;
+}
+
+function updateSpeedPreview() {
+  const spd = parseInt(document.getElementById('test-speed').value) || 60;
+  let desc;
+  if (spd < 60)         desc = `1 real second = ${spd}s of practice`;
+  else if (spd === 60)  desc = `1 real second = 1 minute of practice`;
+  else if (spd === 3600)desc = `1 real second = 1 hour of practice`;
+  else                  desc = `1 real second = ${(spd/60).toFixed(1)} minutes of practice`;
+  document.getElementById('speed-preview').textContent = desc;
+  // live-update if test mode is on
+  testSpeed = spd;
+  document.getElementById('banner-speed').textContent = spd;
+  document.getElementById('speed-badge').textContent  = testMode ? `${spd}× speed` : '';
+  localStorage.setItem('gp_test', JSON.stringify({ enabled: testMode, speed: spd }));
+}
+
+// Inject a fake full-goal session on any chosen date (for testing analytics)
+function injectTestSession() {
+  const dateVal = document.getElementById('view-date').value;
+  if (!dateVal) { showToast('Pick a date first'); return; }
+  const threshold = goalThresholdSec();
+  const dur   = Math.max(threshold, 10); // each session exactly meets goal
+  const count = goals.sessions;          // inject all required sessions at once
+  const [y, mo, dy] = dateVal.split('-').map(Number);
+  for (let i = 0; i < count; i++) {
+    // Space sessions 30 min apart starting at 9am local time
+    const start = new Date(y, mo - 1, dy, 9, i * 30, 0);
+    sessions.push({ id: crypto.randomUUID(), date: dateVal, start: start.toISOString(), durationSec: dur, test: true });
+  }
+  renderTimerScreen();
+  if (document.getElementById('screen-history').classList.contains('active'))   renderHistory();
+  if (document.getElementById('screen-analytics').classList.contains('active')) renderAnalytics();
+  showToast(`Injected ${count} sessions on ${dateVal} — goal met`);
+}
+
+function clearTestSessions() {
+  const n = sessions.filter(s => s.test).length;
+  sessions = sessions.filter(s => !s.test);
+  renderAll();
+  showToast(`Removed ${n} test session${n !== 1 ? 's' : ''}`);
+}
+
+// ── RENDER TIMER ──
+function renderTimerScreen() {
+  const viewDate      = viewDateStr();
+  const isToday       = isViewingToday();
+  const viewSessions  = sessions.filter(s => s.date === viewDate);
+  const threshold     = goalThresholdSec();
+  const total         = goals.sessions;
+
+  // Label: "Today", "Yesterday", or the date
+  const dateLabel = formatDateLabel(viewDate);
+  document.getElementById('slots-label').textContent =
+    `${dateLabel} — goal: ${total} × ${fmtGoalShort()}`;
+
+  // Lock play only in normal mode when not viewing today
+  const btn = document.getElementById('timer-btn');
+  const readonlyBadge = document.getElementById('readonly-badge');
+  const shouldLock = !isToday && !timerRunning && !testMode;
+  if (shouldLock) {
+    btn.classList.add('locked');
+    btn.onclick = () => showToast('Switch to today to start a session');
+    readonlyBadge.textContent = `viewing ${dateLabel.toLowerCase()} — read only`;
+  } else {
+    btn.classList.remove('locked');
+    btn.onclick = toggleTimer;
+    readonlyBadge.textContent = (testMode && !isToday) ? `viewing ${dateLabel.toLowerCase()}` : '';
+  }
+
+  // Slots
+  const slotCount = Math.max(total, viewSessions.length);
+  document.getElementById('slots-grid').style.gridTemplateColumns =
+    `repeat(${Math.min(slotCount, 5)}, 1fr)`;
+
+  let html = '';
+  for (let i = 0; i < slotCount; i++) {
+    const s = viewSessions[i];
+    if (s) {
+      const done  = s.durationSec >= threshold;
+      const label = fmtDurShort(s.durationSec);
+      html += `<div class="slot ${done ? 'done' : 'partial'}">
+        <span class="slot-val">${label}</span>
+        <span class="slot-lbl">${done ? 'done' : 'short'}</span>
+      </div>`;
+    } else {
+      html += `<div class="slot"><span class="slot-lbl">${i + 1}</span></div>`;
+    }
+  }
+  document.getElementById('slots-grid').innerHTML = html;
+
+  const doneCount = viewSessions.filter(s => s.durationSec >= threshold).length;
+  const pct = total > 0 ? Math.min(100, Math.round((doneCount / total) * 100)) : 0;
+  document.getElementById('goal-bar').style.width = pct + '%';
+}
+
+// ── RENDER HISTORY ──
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!sessions.length) {
+    list.innerHTML = '<div class="empty-state"><span class="big">♩</span>No sessions yet.<br>Hit the timer to start tracking.</div>';
+    return;
+  }
+  const byDay = {};
+  sessions.forEach(s => { (byDay[s.date] = byDay[s.date] || []).push(s); });
+  const days = Object.keys(byDay).sort((a,b) => b.localeCompare(a));
+  let html = '';
+  days.forEach(day => {
+    const ds  = byDay[day].sort((a,b) => a.start.localeCompare(b.start));
+    const met = goalMet(ds);
+    const hasTest = ds.some(s => s.test);
+    html += `<div class="history-day">
+      <div class="history-day-header">
+        ${formatDateLabel(day)}
+        <span class="pill ${met ? 'green' : 'amber'}">${met ? 'goal met' : ds.length + '/' + goals.sessions}</span>
+        ${hasTest ? '<span class="pill test">test</span>' : ''}
+      </div>`;
+    ds.forEach(s => {
+      const t = new Date(s.start).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      html += `<div class="session-row">
+        <span class="session-time">${t}</span>
+        <span class="session-dur">${fmtDur(s.durationSec)}</span>
+        <button class="session-del" onclick="deleteSession('${s.id}')">×</button>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+// ── RENDER ANALYTICS ──
+function renderAnalytics() {
+  const allS   = sessions.filter(s => s.id !== '__goals__');
+  const dayMap = buildDayMap(allS);
+  renderCalendar(dayMap);
+  renderBarChart(dayMap); // also updates stats for current window
+}
+
+function updateWindowStats(dayMap, W) {
+  // Build a filtered dayMap containing only the last W days
+  const today = new Date();
+  const windowDayMap = {};
+  for (let i = W - 1; i >= 0; i--) {
+    const d  = new Date(today); d.setDate(d.getDate() - i);
+    const ds = dateStr(d);
+    if (dayMap[ds]) windowDayMap[ds] = dayMap[ds];
+  }
+
+  // Total hours in window
+  let totalSec = 0;
+  Object.values(windowDayMap).forEach(d => d.sessions.forEach(s => totalSec += s.durationSec));
+  document.getElementById('stat-hours').textContent = (totalSec / 3600).toFixed(1);
+  document.getElementById('stat-hours-label').textContent =
+    W === 7 ? 'Hours (7d)' : W === 30 ? 'Hours (30d)' : 'Hours (1y)';
+
+  // Goal hit rate in window
+  const activeDays = Object.keys(windowDayMap).length;
+  const goalDays   = Object.values(windowDayMap).filter(d => d.met).length;
+  const rate       = activeDays > 0 ? Math.round((goalDays / activeDays) * 100) : 0;
+  document.getElementById('stat-rate').textContent = activeDays > 0 ? rate + '%' : '—';
+  document.getElementById('stat-rate-label').textContent =
+    W === 7 ? 'Goal rate (7d)' : W === 30 ? 'Goal rate (30d)' : 'Goal rate (1y)';
+  document.getElementById('stat-rate-unit').textContent =
+    activeDays > 0 ? `${goalDays}/${activeDays} days` : 'no data';
+
+  // Current streak (always all-time)
+  const { current, best: bestAll } = calcStreaks(dayMap);
+  document.getElementById('stat-streak').textContent = current;
+
+  // Best streak within window
+  const windowKeys = Object.keys(windowDayMap).sort();
+  let best = 0, streak = 0, prevDs = null;
+  windowKeys.forEach(ds => {
+    if (prevDs) {
+      const prev = new Date(prevDs + 'T12:00:00');
+      const curr = new Date(ds + 'T12:00:00');
+      const diff = Math.round((curr - prev) / 86400000);
+      if (diff === 1 && windowDayMap[ds].met) { streak++; }
+      else { best = Math.max(best, streak); streak = windowDayMap[ds].met ? 1 : 0; }
+    } else {
+      streak = windowDayMap[ds].met ? 1 : 0;
+    }
+    prevDs = ds;
+  });
+  best = Math.max(best, streak);
+  document.getElementById('stat-best').textContent = best || 0;
+  document.getElementById('stat-best-label').textContent =
+    W === 7 ? 'Best streak (7d)' : W === 30 ? 'Best streak (30d)' : 'Best streak (1y)';
+}
+
+function buildDayMap(sess) {
+  const map = {};
+  sess.forEach(s => { if (!map[s.date]) map[s.date] = { sessions:[], met:false }; map[s.date].sessions.push(s); });
+  Object.keys(map).forEach(d => { map[d].met = goalMet(map[d].sessions); });
+  return map;
+}
+
+function goalMet(ds) {
+  const t = goalThresholdSec();
+  return ds.filter(s => s.durationSec >= t).length >= goals.sessions;
+}
+
+function goalThresholdSec() { return (goals.minutes||0)*60 + (goals.seconds||0); }
+
+function calcStreaks(dayMap) {
+  let streak = 0, best = 0, current = 0;
+  let d = new Date();
+  for (let i = 0; i < 365; i++) {
+    const ds = dateStr(d);
+    if (dayMap[ds] && dayMap[ds].met) { streak++; }
+    else if (i > 0) { best = Math.max(best, streak); streak = 0; }
+    d.setDate(d.getDate() - 1);
+  }
+  best = Math.max(best, streak);
+  d = new Date();
+  for (let i = 0; i < 365; i++) {
+    const ds = dateStr(d);
+    if (dayMap[ds] && dayMap[ds].met) current++;
+    else if (i > 0) break;
+    d.setDate(d.getDate() - 1);
+  }
+  return { current, best };
+}
+
+function renderCalendar(dayMap) {
+  const today = new Date(); let html = '';
+  for (let i = 90; i >= 0; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const ds = dateStr(d), e = dayMap[ds];
+    let cls = 'cal-cell';
+    if (e && e.met)                  cls += ' hit';
+    else if (e && e.sessions.length) cls += ' partial';
+    if (i === 0)                     cls += ' today';
+    html += `<div class="${cls}" title="${ds}"></div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+let chartWindow = 7;
+
+function setChartWindow(days, btn) {
+  chartWindow = days;
+  document.querySelectorAll('.wpill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const allS   = sessions.filter(s => s.id !== '__goals__');
+  const dayMap = buildDayMap(allS);
+  renderBarChart(dayMap); // renderBarChart now calls updateWindowStats internally
+}
+
+function renderBarChart(dayMap) {
+  const W = chartWindow;
+  const today = new Date();
+  const days  = [];
+  for (let i = W - 1; i >= 0; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i); days.push(d);
+  }
+
+  // session counts and minute totals per day
+  const counts  = days.map(d => { const e = dayMap[dateStr(d)]; return e ? e.sessions.length : 0; });
+  const minTots = days.map(d => { const e = dayMap[dateStr(d)]; return e ? Math.round(e.sessions.reduce((a,s)=>a+s.durationSec,0)/60) : 0; });
+
+  const daysWithData  = counts.filter(c => c > 0).length;
+  const totalMins     = minTots.reduce((a,v) => a+v, 0);
+  const avgMins       = daysWithData > 0 ? Math.round(totalMins / daysWithData) : 0;
+  const avgSessions   = daysWithData > 0 ? (counts.reduce((a,v)=>a+v,0) / daysWithData) : 0;
+
+  const maxCount = Math.max(...counts, goals.sessions, 1);
+
+  // SVG dimensions
+  const SVG_H    = 120;  // total svg height px
+  const PAD_TOP  = 14;   // room for count labels above bars
+  const PAD_BOT  = 18;   // room for day labels below bars
+  const BAR_AREA = SVG_H - PAD_TOP - PAD_BOT; // 88px for bars
+
+  // label every Nth bar depending on window
+  const labelEvery = W <= 7 ? 1 : W <= 30 ? 5 : 30;
+
+  const barColor     = 'var(--green)';
+  const barDimColor  = 'var(--border2)';
+  const accentColor  = 'var(--accent)';
+  const textColor    = 'var(--muted)';
+  const textColor2   = 'var(--muted2)';
+
+  // Build SVG using percentage x positions so it scales with container width
+  const n = days.length;
+  const barW  = 100 / n;       // % width per column
+  const gap   = Math.max(0.3, barW * 0.15);
+  const bw    = barW - gap;
+
+  let bars = '', labels = '', counts_labels = '';
+
+  days.forEach((d, i) => {
+    const count  = counts[i];
+    const met    = dayMap[dateStr(d)] && dayMap[dateStr(d)].met;
+    const xPct   = i * barW + gap / 2;
+    const barH   = count > 0 ? Math.max(3, Math.round((count / maxCount) * BAR_AREA)) : 0;
+    const yBar   = PAD_TOP + BAR_AREA - barH;
+    const fill   = met ? barColor : (count > 0 ? 'var(--muted)' : barDimColor);
+    const opacity= count > 0 ? 1 : 0.4;
+
+    bars += `<rect x="${xPct.toFixed(2)}%" y="${yBar}" width="${bw.toFixed(2)}%" height="${barH}"
+      rx="2" fill="${fill}" opacity="${opacity}"/>`;
+
+    if (count > 0) {
+      counts_labels += `<text x="${(xPct + bw/2).toFixed(2)}%" y="${yBar - 2}"
+        text-anchor="middle" font-size="8" fill="${textColor2}" font-family="monospace">${count}</text>`;
+    }
+
+    const showLabel = (i % labelEvery === 0) || i === n - 1;
+    if (showLabel) {
+      const lbl = W <= 7
+        ? ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]
+        : W <= 30
+          ? (i % 5 === 0 ? d.toLocaleDateString([],{month:'short',day:'numeric'}) : '')
+          : (i % 30 === 0 ? d.toLocaleDateString([],{month:'short'}) : '');
+      if (lbl) {
+        labels += `<text x="${(xPct + bw/2).toFixed(2)}%" y="${SVG_H - 2}"
+          text-anchor="middle" font-size="8" fill="${textColor}" font-family="monospace">${lbl}</text>`;
+      }
+    }
+  });
+
+  // Average line — y position based on avgSessions relative to maxCount
+  const avgY = avgSessions > 0
+    ? PAD_TOP + BAR_AREA - Math.round((avgSessions / maxCount) * BAR_AREA)
+    : -1;
+
+  const avgLine = avgY >= PAD_TOP
+    ? `<line x1="0" y1="${avgY}" x2="100%" y2="${avgY}" stroke="${accentColor}" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>`
+    : '';
+
+  const svg = `<svg width="100%" height="${SVG_H}" viewBox="0 0 100 ${SVG_H}"
+    preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"
+    style="overflow:visible">
+    ${bars}${counts_labels}${avgLine}${labels}
+  </svg>`;
+
+  document.getElementById('bar-chart-svg').outerHTML = svg.replace('id="bar-chart-svg"','').replace('<svg','<svg id="bar-chart-svg"');
+  document.getElementById('bar-chart-label').textContent =
+    `Sessions per day — last ${W === 365 ? 'year' : W+'d'}`;
+
+  // avg row below chart
+  const avgRow = document.getElementById('bar-avg-row');
+  if (avgSessions > 0) {
+    avgRow.innerHTML = `<span class="avg-line-swatch"></span>
+      avg ${avgSessions.toFixed(1)} sessions/day &nbsp;·&nbsp; ${avgMins} min/day
+      ${daysWithData < W ? `<span style="color:var(--muted);opacity:0.6">(${daysWithData} active days)</span>` : ''}`;
+  } else {
+    avgRow.innerHTML = '';
+  }
+  // update the stat cards to reflect this window
+  updateWindowStats(dayMap, W);
+}
+
+// ── DELETE ──
+async function deleteSession(id) {
+  const s = sessions.find(x => x.id === id);
+  sessions = sessions.filter(x => x.id !== id);
+  renderHistory(); renderTimerScreen();
+  if (s && !s.test) await apiSave('delete', { id });
+}
+
+// ── SETTINGS ──
+function updateGoalPreview() {
+  const s = parseInt(document.getElementById('goal-sessions').value) || 5;
+  const m = parseInt(document.getElementById('goal-minutes').value)  || 0;
+  const x = parseInt(document.getElementById('goal-seconds').value)  || 0;
+  const dur = m > 0 || x > 0 ? (m > 0 ? `${m}m` : '') + (x > 0 ? ` ${x}s` : '') : 'any length';
+  document.getElementById('goal-preview').innerHTML =
+    `Goal: <strong>${s} session${s!==1?'s':''}</strong> per day, each at least <strong>${dur.trim()}</strong>`;
+}
+
+function saveGoals() {
+  goals.sessions = parseInt(document.getElementById('goal-sessions').value) || 5;
+  goals.minutes  = parseInt(document.getElementById('goal-minutes').value)  || 0;
+  goals.seconds  = parseInt(document.getElementById('goal-seconds').value)  || 0;
+  localStorage.setItem('gp_goals', JSON.stringify(goals));
+  renderTimerScreen();
+  if (!testMode) apiSave('update_goals', { goals });
+  showToast(`Goal saved: ${goals.sessions}× ${fmtGoalShort()}`);
+}
+
+function saveConfig() {
+  cfg.netlify = document.getElementById('cfg-netlify').value.trim().replace(/\/$/,'');
+  cfg.repo    = document.getElementById('cfg-repo').value.trim();
+  localStorage.setItem('gp_cfg', JSON.stringify(cfg));
+  showToast('Config saved — fetching data…');
+  fetchSessions().then(renderAll);
+}
+
+function confirmClear() {
+  if (confirm('Clear all local data? Remote GitHub data is unaffected.')) {
+    localStorage.clear(); sessions = []; goals = { sessions:5, minutes:10, seconds:0 };
+    testMode = false;
+    document.getElementById('test-toggle').checked = false;
+    applyTestMode(false); renderAll();
+    showToast('Local data cleared');
+  }
+}
+
+// ── API ──
+async function apiSave(action, payload) {
+  if (!cfg.netlify || testMode) return false;
+  try {
+    const res = await fetch(`${cfg.netlify}/.netlify/functions/save-session`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
+// ── HELPERS ──
+function todayStr()    { return dateStr(new Date()); }
+function viewDateStr() { return document.getElementById('view-date').value || todayStr(); }
+function isViewingToday() { return viewDateStr() === todayStr(); }
+
+function onViewDateChange() {
+  renderTimerScreen();
+}
+function jumpToToday() {
+  document.getElementById('view-date').value = todayStr();
+  renderTimerScreen();
+}
+function dateStr(d)   { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtDur(sec)  { const m=Math.floor(sec/60),s=sec%60; return m>0?`${m}m ${s}s`:`${s}s`; }
+function fmtDurShort(sec) { const m=Math.floor(sec/60),s=sec%60; return m>0?`${m}m`:s+'s'; }
+function fmtGoalShort() {
+  const m=goals.minutes||0, s=goals.seconds||0;
+  if (!m&&!s) return 'any';
+  return (m?m+'m':'')+(s?' '+s+'s':'');
+}
+function formatDateLabel(str) {
+  // Parse as local date (avoid UTC-shift by not using new Date(str) directly)
+  const [y, mo, dy] = str.split('-').map(Number);
+  const d = new Date(y, mo - 1, dy);
+  const today     = todayStr();
+  const yesterday = dateStr(new Date(new Date().setDate(new Date().getDate() - 1)));
+  if (str === today)     return 'Today';
+  if (str === yesterday) return 'Yesterday';
+  return d.toLocaleDateString([], { weekday:'short', month:'short', day:'numeric' });
+}
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+function renderAll() {
+  renderTimerScreen();
+  if (document.getElementById('screen-history').classList.contains('active'))   renderHistory();
+  if (document.getElementById('screen-analytics').classList.contains('active')) renderAnalytics();
+}
+
+init();
+</script>
+</body>
+</html>
